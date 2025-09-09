@@ -1,0 +1,6 @@
+{
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "eslint.validate": [],
+    "terminal.integrated.autoOpen": false,
+    "code-runner.runInTerminal": false
+}
