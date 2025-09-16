@@ -39,13 +39,13 @@ export async function POST(request: Request) {
         createdAt: new Date().toISOString()
     }
 
-    await db.collection("interview").add(interview);
+    await db.collection("interviews").add(interview);
 
     return Response.json({ succes: true}, {status: 200})
     }catch(error){
-        console.error(error);
+        console.error("Error:",error);
 
-        return Response.json({ success: false, error}, {status: 500});
+        return Response.json({ success: false, error: error}, {status: 500});
     }
 
 }
