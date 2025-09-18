@@ -18,7 +18,7 @@ interface SavedMessage {
     content: string;
 }
 
-export const Agent = ({userName, userId, type}: AgentProps) => {
+export const Agent = ({userName, userId, type,interviewId, questions}: AgentProps) => {
     const router = useRouter();
     const[isSpeaking, setIsSpeaking]=useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -59,12 +59,34 @@ export const Agent = ({userName, userId, type}: AgentProps) => {
 
     },[] )
 
+    const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+        console.log('Generate feedback here.');
+
+        const { success, id } = {
+            success: true,
+            id: 'feedback-id'
+        }
+
+        if(success && id ) {
+            router.push(`/root/interview/${interviewId}/feedback`);
+        } else {
+            console.log('Error saving feedback');
+            router.push("/");
+        }
+    }
+
     // useEffect(() => {
     //     if (callStatus === CallStatus.FINISHED) router.push('/');
     //  } ,[messages, callStatus, type, userId]);
     useEffect(() => {
-    if (callStatus === CallStatus.FINISHED) router.push('/');
-}, [callStatus]);
+    if (callStatus === CallStatus.FINISHED){
+        if(type === 'generate'){
+            router.push("/")
+        }else{
+            handleGenerateFeedback(messages);
+        }
+    } 
+}, [messages,callStatus, type, userId]);
 
 
     //  const handleCall = async () => {
@@ -108,20 +130,38 @@ export const Agent = ({userName, userId, type}: AgentProps) => {
 
     setCallStatus(CallStatus.CONNECTING);
 
-    try {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-          role: "interviewer",
-          type: type,
-          level:"beginner",
+    if(type === 'generate') {
+        try {
+            await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!, {
+            variableValues: {
+            username: userName,
+            userid: userId,
+            role: "interviewer",
+            type: type,
+            level:"beginner",
         },
       });
     } catch (err) {
       console.error('Call failed to start', err);
       setCallStatus(CallStatus.INACTIVE);
     }
+    }else {
+        let formattedQuestions = '';
+
+        if(questions) {
+            formattedQuestions = questions
+            .map((question) => `-${question}`)
+            .join('\n');
+        }
+
+        await vapi.start('INTERVIEWER', {
+            variableValues: {
+                questions: formattedQuestions
+            }
+        })
+    }
+
+    
   };
 
 const handleDisconnect = async () => {
