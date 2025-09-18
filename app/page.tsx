@@ -4,8 +4,31 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { dummyInterviews } from '@/constants';
 import InterviewCard from "@/components/InterviewCard";
+import { getCurrentUser ,getInterviewsByUserId, getLatestInterviews } from '@/lib/actions/auth.action';
 
-const Page = () => {
+const Page = async()=> {
+//   const user = await getCurrentUser();
+//   const [userInterviews,latestInterviews] = await Promise.all([
+//     await getInterviewsByUserId(user?.id!),
+//     await getLatestInterviews({userId: user?.id}),
+//   ])
+const user = await getCurrentUser();
+
+if (!user?.id) {
+  // Handle unauthenticated user or loading state
+  return <p>Loading user data or please sign in...</p>;
+}
+
+const userId = user.id;
+
+const [userInterviews, latestInterviews] = await Promise.all([
+  getInterviewsByUserId(userId),
+  getLatestInterviews(userId), // now guaranteed to be defined
+]);
+
+  
+  const hasPastInterviews = userInterviews?.length > 0;
+  const hasUpComingInterviews = latestInterviews?.length > 0;
   return (
   <>
   <section className="card-cta">
@@ -28,9 +51,13 @@ const Page = () => {
     <h2>Your Interviews</h2>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {dummyInterviews.map((interview)=>(
-        <InterviewCard {... interview} key={interview.id} />
-      ))}
+      {hasPastInterviews ? (
+          userInterviews ?.map((interview) =>(
+            <InterviewCard {... interview} key={interview.id} />
+          ))):(
+          <p>You haven&apos;t taken any interview yet</p>
+        )
+      }
     </div>
   </section>
 
@@ -38,16 +65,20 @@ const Page = () => {
     <h2>Take an interview</h2>
     
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {dummyInterviews.map((interview)=>(
-        <InterviewCard {... interview} key={interview.id} />
-      ))}
-
+      {hasUpComingInterviews ? (
+          latestInterviews?.map((interview) =>(
+            <InterviewCard {... interview} key={interview.id} />
+          ))):(
+          <p>There are no new interviews available</p>
+        )
+      }
       {/*<p>You haven&apos; taken any interviews yet</p>*/}
     </div>
   </section>
   </>
   
   )
+
     
 }
 export default Page
