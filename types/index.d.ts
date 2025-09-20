@@ -19,10 +19,10 @@ interface Interview {
   level: string;
   questions: string[];
   techstack: string[];
-  createdAt: string;
-  userId: string;
+  createdAt?: string;
+  userId?: string;
   type: string;
-  finalized: boolean;
+  finalized?: boolean;
 }
 
 interface CreateFeedbackParams {
@@ -48,7 +48,7 @@ interface InterviewCardProps {
 }
 
 interface AgentProps {
-  userName: string;
+  userName?: string;
   userId?: string;
   interviewId?: string;
   feedbackId?: string;
